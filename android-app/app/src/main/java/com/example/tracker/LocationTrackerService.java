@@ -1,0 +1,1 @@
+private static final String SERVER_URL = "https://location-tracker.wasmer.app/update_location.php";

