@@ -8,7 +8,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 function fetchLatestLocation() {
-    fetch('backend/get_location.php')
+    fetch('get_location.php')
         .then(response => response.json())
         .then(result => {
             if (result.status === 'success') {
